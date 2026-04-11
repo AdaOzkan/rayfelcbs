@@ -189,29 +189,29 @@
         var m = Math.floor((abs - d) * 60);
         var s = ((abs - d - m / 60) * 3600).toFixed(2);
         var dir = isLat ? (deg >= 0 ? "K" : "G") : (deg >= 0 ? "D" : "B");
-        return ${d}°${m}'${s}"${dir};
+        return `${d}°${m}'${s}"${dir}`;
     }
 
     function updatePopupContent(layer) {
         var type = layer.drawType;
         var name = layer.customName || "Yeni Ölçüm";
         var color = layer.options.color || "#27f4d2";
-        var content = <div style="min-width:180px"><b>${name}</b><br>;
+        var content = `<div style="min-width:180px"><b>${name}</b><br>`;
 
         if (type === 'marker') {
             var ll = layer.getLatLng();
-            content += <small>Ondalık: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}<br>DMS: ${toDMS(ll.lat, true)} ${toDMS(ll.lng, false)}</small>;
+            content += `<small>Ondalık: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}<br>DMS: ${toDMS(ll.lat, true)} ${toDMS(ll.lng, false)}</small>`;
         } else if (type === 'circle') {
             var radius = layer.getRadius();
             var area = (Math.PI * Math.pow(radius, 2) / 1000000).toFixed(4);
-            content += <small>Yarıçap: ${radius.toFixed(2)} m<br>Alan: ${area} km²</small>;
+            content += `<small>Yarıçap: ${radius.toFixed(2)} m<br>Alan: ${area} km²</small>`;
         } else if (type === 'polygon' || type === 'rectangle') {
             var area = (L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]) / 1000000).toFixed(3);
-            content += <small>Alan: ${area} km²</small>;
+            content += `<small>Alan: ${area} km²</small>`;
         } else if (type === 'polyline') {
             var pts = layer.getLatLngs(), d = 0;
             for (var i=0; i<pts.length-1; i++) d += pts[i].distanceTo(pts[i+1]);
-            content += <small>Mesafe: ${(d/1000).toFixed(3)} km</small>;
+            content += `<small>Mesafe: ${(d/1000).toFixed(3)} km</small>`;
         }
 
         content += `
@@ -266,7 +266,7 @@
             let label = aktifKategori.charAt(0).toUpperCase() + aktifKategori.slice(1);
             let icon = aktifKategori === "nufus" ? "users" : aktifKategori === "egitim" ? "graduation-cap" : aktifKategori === "yas" ? "calendar-days" : "heart";
             document.getElementById('panelTitle').innerText = label + " Analizi";
-            document.getElementById('infoContent').innerHTML = <div class="info-item"><b>${m.name} Mah.</b></div><div class="info-item"><i class="fa-solid fa-${icon}"></i> ${label}: ${m[aktifKategori]}</div>;
+            document.getElementById('infoContent').innerHTML = `<div class="info-item"><b>${m.name} Mah.</b></div><div class="info-item"><i class="fa-solid fa-${icon}"></i> ${label}: ${m[aktifKategori]}</div>`;
         });
         katmanlar.push(marker);
     });
@@ -299,7 +299,7 @@
     function createCustomIcon(imgFile, color) {
         return L.divIcon({
             className: 'custom-location-icon',
-            html: <img src="${imgFile}" style="border: 4px solid ${color};">,
+            html: `<img src="${imgFile}" style="border: 4px solid ${color};">`,
             iconSize: [80, 80], iconAnchor: [40, 40], popupAnchor: [0, -40]
         });
     }
@@ -319,7 +319,7 @@
         var marker;
         if (n.img) { marker = L.marker(n.coords, { icon: createCustomIcon(n.img, n.color) }).addTo(map); }
         else { marker = L.circleMarker(n.coords, { radius: 12, fillColor: n.color, color: "#fff", weight: 3, fillOpacity: 1 }).addTo(map); }
-        marker.bindPopup(<b>${n.name}</b>);
+        marker.bindPopup(`<b>${n.name}</b>`);
     });
 
     // --- GELİŞMİŞ FAY HATTI SİSTEMİ ---
