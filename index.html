@@ -1,65 +1,61 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
+<html lang="tr"> <head>
     <meta charset="utf-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Projeler | Ada Özkan</title> <link rel="icon" type="image/x-icon" href="adalogo.ico"> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> <style>
-        /* Formula 1 yazı tiplerini sisteme tanımlama */
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* Özel fontların sisteme dahil edilmesi */
         @font-face { font-family: 'F1Black'; src: url('Formula1-Black.ttf') format('truetype'); }
         @font-face { font-family: 'F1Bold'; src: url('Formula1-Bold_web.ttf') format('truetype'); }
         @font-face { font-family: 'F1Regular'; src: url('Formula1-Regular-1.ttf') format('truetype'); }
 
-        /* Genel sayfa tasarımı: Kaydırmayı engelle ve siyah tema yap */
+        /* Genel sayfa tasarımı: Kaydırma çubuklarını gizler ve arka planı siyah yapar */
         body { margin: 0; padding: 0; font-family: 'F1Regular', sans-serif; background: #0a0a0a; color: white; height: 100vh; overflow: hidden; }
         
-        /* Arka plandaki teknolojik noktacıkların (partikül) alanı */
+        /* Arka plandaki parçacık animasyonunun katman ayarı */
         #particles-js { position: fixed; width: 100%; height: 100%; z-index: 0; top: 0; left: 0; pointer-events: none; }
 
-        /* Harita kapsayıcısı ve harita boyutu */
+        /* Haritanın ekrana yayılması */
         .map-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
         #map { width: 100%; height: 100%; background: #0a0a0a; }
 
-        /* Şehir arama kutusunun tasarımı */
+        /* Şehir arama kutusunun stil tasarımı */
         .search-container { position: absolute; top: 20px; left: 60px; z-index: 1000; width: 220px; }
         #citySearch {
             width: 100%; padding: 10px 15px; border-radius: 8px; border: 1px solid #3671c6;
             background: rgba(10, 10, 10, 0.95); color: white; font-size: 13px; outline: none; font-family: 'F1Regular', sans-serif;
         }
 
-        /* Sağ üstteki buton panelinin (Analiz butonları) tasarımı */
+        /* Sağ üstteki veri seçim butonlarının paneli */
         .map-overlay-panel {
             position: absolute; top: 20px; right: 20px; background: rgba(10, 10, 10, 0.9);
             padding: 10px; z-index: 1000; border-radius: 12px; border: 1px solid #3671c6; display: flex; flex-direction: column; gap: 5px;
         }
 
-        /* Sağ alttaki detay bilgi kutusunun tasarımı */
+        /* Sağ alttaki bilgi kutusunun (detay paneli) tasarımı */
         .info-box {
             position: absolute; bottom: 30px; right: 20px; padding: 18px; background: rgba(20, 41, 72, 0.98);
             border-radius: 15px; border: 2px solid #27f4d2; z-index: 1000; min-width: 250px; 
             box-shadow: 0 0 20px rgba(39, 244, 210, 0.2); transition: 0.3s;
         }
 
-        /* Bilgi kutusu içindeki başlık ve metin stilleri */
         .info-box h4 { margin: 0 0 12px 0; color: #27f4d2; font-family: 'F1Black', sans-serif; border-bottom: 1px solid #3671c6; padding-bottom: 5px; font-size: 14px; }
         .info-item { margin-bottom: 8px; font-size: 13px; color: #fff; line-height: 1.4; }
         .info-item i { color: #27f4d2; margin-right: 8px; }
 
-        /* Harita üzerindeki açılır pencerelerin (popup) tasarımı */
+        /* Harita üzerindeki popup (baloncuk) pencerelerinin tasarımı */
         .leaflet-popup-content-wrapper { background: #142948; color: white; border: 1px solid #27f4d2; font-family: 'F1Regular', sans-serif; }
         .leaflet-popup-tip { background: #27f4d2; }
         .popup-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
         .popup-btn { background: #27f4d2; color: black; border: none; padding: 5px; cursor: pointer; font-size: 11px; border-radius: 4px; font-family: 'F1Bold'; width: 100%; }
 
-        /* Panel butonlarının genel stili ve hover (üzerine gelme) efekti */
+        /* Butonların genel görünüşü ve hover (üzerine gelince) efektleri */
         button { margin: 2px; padding: 8px 12px; border: 1px solid #27f4d2; border-radius: 6px; cursor: pointer; background: transparent; color: #27f4d2; font-family: 'F1Regular', sans-serif; font-size: 10px; transition: 0.3s; }
         button:hover, button.active { background: #27f4d2; color: #000; }
-        .reset-btn { border-color: #e8002d !important; color: #e8002d !important; } /* Sıfırla butonu kırmızı */
+        .reset-btn { border-color: #e8002d !important; color: #e8002d !important; }
 
-        /* Özel profil resimli ikonun yuvarlak ve parlayan stili */
-        .custom-location-icon { border-radius: 50%; overflow: hidden; box-shadow: 0 0 15px rgba(39, 244, 210, 0.7); display: flex; justify-content: center; align-items: center; background-color: #0a0a0a; }
-        .custom-location-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-        /* Sayfa altındaki imza yazısı */
+        /* Sayfa altındaki imza kısmı */
         footer { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; font-family: 'F1Black', sans-serif; font-size: 10px; opacity: 0.3; pointer-events: none; }
     </style>
 </head>
@@ -87,58 +83,60 @@
 
 <footer>© 2026 ADA OZKAN • PERFORMANCE PORTFOLIO</footer>
 
-<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script> <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script> <script>
-    // Partikül animasyonunu başlatma ve renk ayarları
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<script>
+    /* Arka plan partikül animasyonunu başlatan ayarlar */
     particlesJS("particles-js", { "particles": { "number": { "value": 60 }, "color": { "value": "#27f4d2" }, "opacity": { "value": 0.2 }, "line_linked": { "enable": true, "color": "#3671c6" } } });
 
-    // Farklı harita taban katmanlarını (Sade, Uydu, İzohips) tanımlama
+    /* Farklı harita katman türlerinin (Sade, Uydu, İzohips) tanımlanması */
     var light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
     var contours = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { opacity: 0.4 });
 
-    // Haritayı başlatma ve varsayılan merkezi (Lüleburgaz civarı) ayarlama
+    /* Harita nesnesinin başlatılması ve varsayılan koordinatlara (Lüleburgaz) odaklanması */
     var map = L.map('map', { layers: [light], zoomControl: false }).setView([41.403, 27.355], 13);
-    L.control.zoom({ position: 'bottomleft' }).addTo(map); // Yakınlaşma butonlarını sol alta al
+    L.control.zoom({ position: 'bottomleft' }).addTo(map); // Yakınlaşma butonlarını sol alta ekler
     
-    // Harita üzerindeki farklı veri grupları için katman konteynırları
-    var cizilenOgeler = new L.FeatureGroup().addTo(map); // Kullanıcının çizdikleri
-    var mahalleGrubu = new L.LayerGroup().addTo(map); // Mahalle noktaları
-    var fayGrubu = new L.LayerGroup().addTo(map); // Fay hattı çizgileri
+    /* Haritadaki katman gruplarının (çizimler, mahalleler, faylar) oluşturulması */
+    var cizilenOgeler = new L.FeatureGroup().addTo(map);
+    var mahalleGrubu = new L.LayerGroup().addTo(map);
+    var fayGrubu = new L.LayerGroup().addTo(map);
 
-    // Katman kontrol menüsünü sol alta ekleme
+    /* Katman seçme menüsünün oluşturulması */
     L.control.layers(
         { "Sade": light, "Uydu": satellite }, 
         { "İzohips": contours, "Faylar": fayGrubu, "Mahalleler": mahalleGrubu, "Çizimler": cizilenOgeler }, 
         { position: 'bottomleft', collapsed: false }
     ).addTo(map);
 
-    // Çizim araçlarını (sol taraf) aktif etme
+    /* Harita üzerinde çizim yapmayı sağlayan araç çubuğu */
     var drawControl = new L.Control.Draw({ 
         edit: { featureGroup: cizilenOgeler }, 
         draw: { polygon: true, polyline: true, rectangle: true, circle: true, marker: true } 
     });
     map.addControl(drawControl);
 
-    // Bir şekil çizildiğinde veya tıklandığında popup içeriğini güncelleyen fonksiyon
+    /* Çizilen şekillerin (poligon, daire vb.) alan ve mesafe bilgilerini hesaplayıp popup içeriğini güncelleyen fonksiyon */
     function updatePopupContent(layer) {
         var type = layer.drawType, name = layer.customName || "Yeni Ölçüm", color = layer.options.color || "#27f4d2";
         var content = `<div style="min-width:180px"><b>${name}</b><br>`;
         
-        // Şeklin tipine göre matematiksel hesaplamalar yapma
-        if (type === 'marker') { // Eğer sadece işaretçiyse koordinat ver
+        if (type === 'marker') {
             var ll = layer.getLatLng();
             content += `<small>Konum: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}</small>`;
-        } else if (type === 'circle') { // Daire ise alanını (pi * r^2) hesapla
+        } else if (type === 'circle') {
             content += `<small>Alan: ${(Math.PI * Math.pow(layer.getRadius(), 2) / 1000000).toFixed(4)} km²</small>`;
-        } else if (type === 'polygon' || type === 'rectangle') { // Çokgense yüzölçümü hesapla
+        } else if (type === 'polygon' || type === 'rectangle') {
             content += `<small>Alan: ${(L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]) / 1000000).toFixed(3)} km²</small>`;
-        } else if (type === 'polyline') { // Çizgiyse mesafe hesapla
+        } else if (type === 'polyline') {
             var pts = layer.getLatLngs(), d = 0;
             for (var i=0; i<pts.length-1; i++) d += pts[i].distanceTo(pts[i+1]);
             content += `<small>Mesafe: ${(d/1000).toFixed(3)} km</small>`;
         }
 
-        // Popup içine isim düzenleme ve renk değiştirme butonları ekle
         content += `
             <div class="popup-controls">
                 <button class="popup-btn" onclick="renameLayer(${L.stamp(layer)})">İsmi Düzenle</button>
@@ -148,19 +146,19 @@
             </div>
         </div>`;
         
-        layer.bindPopup(content); // Bilgiyi haritadaki şekle bağla
-        document.getElementById('panelTitle').innerText = name; // Sağ alt paneli güncelle
-        document.getElementById('infoContent').innerHTML = content;
+        layer.bindPopup(content); // Popup'ı katmana bağlar
+        document.getElementById('panelTitle').innerText = name; // Paneli günceller
+        document.getElementById('infoContent').innerHTML = content; // Bilgi kutusunu günceller
     }
 
-    // Çizilen şeklin ismini değiştiren fonksiyon
+    /* Çizimin ismini değiştiren fonksiyon */
     window.renameLayer = function(id) {
         var layer = cizilenOgeler.getLayer(id);
         var newName = prompt("İsim:", layer.customName || "");
         if (newName) { layer.customName = newName; updatePopupContent(layer); layer.openPopup(); }
     };
 
-    // Çizilen şeklin rengini değiştiren fonksiyon
+    /* Çizimin rengini değiştiren fonksiyon */
     window.changeLayerColor = function(id, newColor) {
         var layer = cizilenOgeler.getLayer(id);
         if (layer.setStyle) layer.setStyle({ color: newColor, fillColor: newColor });
@@ -168,7 +166,7 @@
         updatePopupContent(layer);
     };
 
-    // Yeni bir çizim tamamlandığında çalışan olay
+    /* Harita üzerinde yeni bir çizim bitirildiğinde tetiklenen olay */
     map.on(L.Draw.Event.CREATED, function (e) {
         var layer = e.layer;
         layer.drawType = e.layerType;
@@ -178,23 +176,25 @@
         updatePopupContent(layer);
     });
 
-    // Türkiye illeri koordinat verisi (Arama motoru için)
-    const iller = {"Adana":[37,35.32],"Adıyaman":[37.76,38.27], /* ... diğer iller ... */ "Düzce":[40.84,31.15]};
+    /* Türkiye illerinin koordinat veritabanı */
+    const iller = {"Adana":[37,35.32],"Adıyaman":[37.76,38.27],"Afyon":[38.75,30.55],"Ağrı":[39.71,43.05],"Amasya":[40.64,35.83],"Ankara":[39.93,32.85],"Antalya":[36.88,30.7],"Artvin":[41.18,41.81],"Aydın":[37.84,27.84],"Balıkesir":[39.64,27.88],"Bilecik":[40.14,29.97],"Bingöl":[38.88,40.49],"Bitlis":[38.4,42.1],"Bolu":[40.73,31.6],"Burdur":[37.72,30.29],"Bursa":[40.18,29.06],"Çanakkale":[40.15,26.41],"Çankırı":[40.6,33.61],"Çorum":[40.55,34.95],"Denizli":[37.77,29.08],"Diyarbakır":[37.91,40.23],"Edirne":[41.68,26.56],"Elazığ":[38.68,39.22],"Erzincan":[39.75,39.5],"Erzurum":[39.9,41.26],"Eskişehir":[39.77,30.52],"Gaziantep":[37.06,37.38],"Giresun":[40.91,38.38],"Gümüşhane":[40.46,39.48],"Hakkari":[37.57,43.74],"Hatay":[36.2,36.16],"Isparta":[37.76,30.55],"Mersin":[36.81,34.64],"İstanbul":[41,28.97],"İzmir":[38.42,27.14],"Kars":[40.6,43.09],"Kastamonu":[41.38,33.77],"Kayseri":[38.72,35.48],"Kırklareli":[41.73,27.21],"Kırşehir":[39.14,34.17],"Kocaeli":[40.85,29.88],"Konya":[37.87,32.49],"Kütahya":[39.41,29.98],"Malatya":[38.35,38.3],"Manisa":[38.61,27.42],"Kahramanmaraş":[37.58,36.93],"Mardin":[37.31,40.73],"Muğla":[37.21,28.36],"Muş":[38.74,41.5],"Nevşehir":[38.62,34.71],"Niğde":[37.96,34.68],"Ordu":[40.98,37.87],"Rize":[41.02,40.52],"Sakarya":[40.75,30.37],"Samsun":[41.28,36.33],"Siirt":[37.92,41.94],"Sinop":[42.02,35.15],"Sivas":[39.74,37.01],"Tekirdağ":[40.98,27.51],"Tokat":[40.31,36.55],"Trabzon":[41,39.71],"Tunceli":[39.1,39.54],"Şanlıurfa":[37.15,38.79],"Uşak":[38.68,29.4],"Van":[38.48,43.38],"Yozgat":[39.81,34.81],"Zonguldak":[41.45,31.79],"Aksaray":[38.36,34.03],"Bayburt":[40.25,40.22],"Karaman":[37.17,33.22],"Kırıkkale":[39.84,33.51],"Batman":[37.88,41.13],"Şırnak":[37.51,42.46],"Bartın":[41.63,32.33],"Ardahan":[41.11,42.7],"Iğdır":[39.91,44.03],"Yalova":[40.65,29.27],"Karabük":[41.2,32.62],"Kilis":[36.71,37.12],"Osmaniye":[37.07,36.24],"Düzce":[40.84,31.15]};
+    
+    /* Arama listesini alfebetik olarak datalist'e doldurur */
     const dl = document.getElementById('cityList');
-    // İlleri alfabetik dizip arama listesine (datalist) ekleme
     Object.keys(iller).sort().forEach(il => { let opt = document.createElement('option'); opt.value = il; dl.appendChild(opt); });
-    // Seçilen ile haritayı uçurma (flyTo)
+    
+    /* Seçilen şehre haritayı uçurur (zoom yapar) */
     function goToCity(val) { if(iller[val]) map.flyTo(iller[val], 11); }
 
-    // Mahalle bazlı analiz verileri (Örnek CBS verisi)
-    const mahalleler = [{name:"Sevgi", lat:41.3919, lon:27.3454, nufus:2100, yas:"65+", medeni:"Bekar", egitim:"Lisans"},{name:"8 Kasım", lat:41.3901, lon:27.3549, nufus:10900, yas:"40-44", medeni:"Evli", egitim:"Lise"}, /* ... diğer mahalleler ... */ ];
+    /* Mahalle bazlı simülasyon verileri */
+    const mahalleler = [{name:"Sevgi", lat:41.3919, lon:27.3454, nufus:2100, yas:"65+", medeni:"Bekar", egitim:"Lisans"},{name:"8 Kasım", lat:41.3901, lon:27.3549, nufus:10900, yas:"40-44", medeni:"Evli", egitim:"Lise"},{name:"Hürriyet", lat:41.4031, lon:27.3424, nufus:7300, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Yılmaz", lat:41.4120, lon:27.3508, nufus:3200, yas:"40-44", medeni:"Evli", egitim:"Lise"},{name:"Dere", lat:41.4090, lon:27.3321, nufus:1800, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Gençlik", lat:41.3981, lon:27.3491, nufus:6400, yas:"20-24", medeni:"Bekar", egitim:"Lise"},{name:"Kurtuluş", lat:41.3989, lon:27.3565, nufus:8000, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Siteler", lat:41.3966, lon:27.3570, nufus:7600, yas:"30-34", medeni:"Evli", egitim:"Lise"},{name:"Yıldız", lat:41.3982, lon:27.3659, nufus:8000, yas:"40-44", medeni:"Evli", egitim:"Lise"},{name:"İnönü", lat:41.4019, lon:27.3600, nufus:6000, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Kocasinan", lat:41.4068, lon:27.3453, nufus:6200, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Gündoğu", lat:41.4082, lon:27.3630, nufus:6700, yas:"65+", medeni:"Bekar", egitim:"İlkokul"},{name:"Atatürk", lat:41.4033, lon:27.3697, nufus:9700, yas:"40-44", medeni:"Evli", egitim:"Lise"},{name:"Güneş", lat:41.4058, lon:27.3698, nufus:5900, yas:"65+", medeni:"Evli", egitim:"İlkokul"},{name:"Cumhuriyet", lat:41.4139, lon:27.3592, nufus:3600, yas:"65+", medeni:"Evli", egitim:"Lise"},{name:"Barış", lat:41.4116, lon:27.3598, nufus:4100, yas:"65+", medeni:"Evli", egitim:"İlkokul"}];
 
     var aktifKategori = "", katmanlar = [];
-    // Her mahalle için haritaya birer daire işaretçisi koyma
+    /* Her mahalle verisi için haritaya bir daire marker ekler */
     mahalleler.forEach(m => {
         var marker = L.circleMarker([m.lat, m.lon], { radius: 10, fillColor: "#ccc", color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(mahalleGrubu);
-        marker.veri = m; // Veriyi işaretçinin içine sakla
-        marker.on("click", function() { // Tıklandığında bilgileri panelde göster
+        marker.veri = m; // Veriyi marker nesnesine saklar
+        marker.on("click", function() {
             if(!aktifKategori) return;
             document.getElementById('panelTitle').innerText = aktifKategori.toUpperCase() + " Verisi";
             document.getElementById('infoContent').innerHTML = `<b>${m.name} Mah.</b><br>${aktifKategori}: ${m[aktifKategori]}`;
@@ -202,45 +202,41 @@
         katmanlar.push(marker);
     });
 
-    // Renk analizi yapan ana fonksiyon (Nüfus, Yaş vb. butonlara basınca çalışır)
+    /* Butonlara basıldığında mahallelerin renklerini veriye göre güncelleyen fonksiyon */
     function guncelle(tip, btn) {
         aktifKategori = tip;
-        document.querySelectorAll('.map-overlay-panel button').forEach(b => b.classList.remove('active')); // Buton stilini güncelle
+        document.querySelectorAll('.map-overlay-panel button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         katmanlar.forEach(k => {
-            let v = k.veri[tip], r = "#ccc"; // Varsayılan renk gri
-            // Verinin değerine göre renk ataması yap (Koyu mavi = yüksek nüfus vb.)
+            let v = k.veri[tip], r = "#ccc";
+            // Nüfus, Eğitim, Yaş ve Medeni Duruma göre renk skalası mantığı
             if(tip==='nufus') r = v > 8000 ? '#08306b' : v > 4000 ? '#4292c6' : '#9ecae1';
             else if(tip==='egitim') r = v==="Lisans" ? '#27f4d2' : v==="Lise" ? '#3671c6' : '#e8002d';
             else if(tip==='yas') r = v==="65+" ? '#e8002d' : v==="40-44" ? '#ffa500' : '#27f4d2';
             else if(tip==='medeni') r = v==="Evli" ? '#3671c6' : '#f427d2';
-            k.setStyle({ fillColor: r }); // Haritadaki noktanın rengini değiştir
+            k.setStyle({ fillColor: r });
         });
     }
 
-    // Haritayı ilk konumuna döndürür ve çizimleri siler
+    /* Haritayı başlangıç noktasına döndürür ve çizimleri temizler */
     function resetMap() { map.setView([41.403, 27.355], 13); cizilenOgeler.clearLayers(); }
 
-    // GeoJSON formatında Türkiye fay hatları verisi
+    /* Türkiye'deki ana fay hatlarının GeoJSON koordinat verileri */
     const detayliFaylar = {
         "type": "FeatureCollection",
         "features": [
             { "type": "Feature", "properties": { "name": "Kuzey Anadolu Fay Hattı (KAF)", "risk": "Kritik", "color": "#ff0000" }, "geometry": { "type": "LineString", "coordinates": [[26.1, 40.4], [26.8, 40.5], [27.5, 40.6], [28.5, 40.7], [29.5, 40.8], [30.5, 40.8], [31.5, 40.9], [32.5, 41.0], [33.8, 41.0], [35.2, 40.8], [36.5, 40.4], [37.5, 40.2], [38.8, 39.9], [40.0, 39.7], [41.2, 39.5], [42.5, 39.3], [43.8, 39.1], [44.9, 39.0]] } },
-            /* ... diğer faylar ... */
+            { "type": "Feature", "properties": { "name": "Doğu Anadolu Fay Hattı (DAF)", "risk": "Yüksek", "color": "#ff4500" }, "geometry": { "type": "LineString", "coordinates": [[35.5, 36.2], [36.2, 36.8], [36.8, 37.3], [37.5, 37.8], [38.2, 38.2], [39.0, 38.6], [39.8, 39.0], [40.5, 39.4], [41.2, 39.4]] } },
+            { "type": "Feature", "properties": { "name": "Batı Anadolu Fay Sistemi - Gediz", "risk": "Yüksek", "color": "#ffa500" }, "geometry": { "type": "LineString", "coordinates": [[26.5, 38.4], [27.2, 38.5], [28.0, 38.6], [29.0, 38.5]] } },
+            { "type": "Feature", "properties": { "name": "Batı Anadolu Fay Sistemi - Menderes", "risk": "Yüksek", "color": "#ffa500" }, "geometry": { "type": "LineString", "coordinates": [[27.0, 37.8], [28.2, 37.9], [29.5, 37.8], [30.5, 37.7]] } }
         ]
     };
 
-    // Fay hatlarını haritaya çizgisel olarak ekleme ve popup bağlama
+    /* Fay hattı verilerini haritaya renkli çizgiler olarak çizer */
     L.geoJSON(detayliFaylar, {
         style: (f) => ({ color: f.properties.color, weight: 4, opacity: 0.8 }),
         onEachFeature: (f, l) => { l.bindPopup(`<b>${f.properties.name}</b><br>Risk Durumu: ${f.properties.risk}`); }
     }).addTo(fayGrubu);
-
-    // Profil resimli özel işaretçi (icon) oluşturma fonksiyonu
-    function createCustomIcon(img, col) { return L.divIcon({ className: 'custom-location-icon', html: `<img src="${img}" style="border: 3px solid ${col};">`, iconSize: [60, 60] }); }
-    // Haritaya özel bir nokta (Ada'nın Evi) ekleme
-    const ozel = [{ name: "Ada'nın Evi", coords: [40.888178, 26.896884], col: "#F333FF", img: "ada.jpg" }];
-    ozel.forEach(n => { L.marker(n.coords, { icon: createCustomIcon(n.img, n.col) }).addTo(map).bindPopup(n.name); });
 
 </script>
 </body>
