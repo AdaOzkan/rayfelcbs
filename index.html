@@ -5,22 +5,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
-        /* Özel fontların sisteme dahil edilmesi */
         @font-face { font-family: 'F1Black'; src: url('Formula1-Black.ttf') format('truetype'); }
         @font-face { font-family: 'F1Bold'; src: url('Formula1-Bold_web.ttf') format('truetype'); }
         @font-face { font-family: 'F1Regular'; src: url('Formula1-Regular-1.ttf') format('truetype'); }
 
-        /* Genel sayfa tasarımı */
         body { margin: 0; padding: 0; font-family: 'F1Regular', sans-serif; background: #0a0a0a; color: white; height: 100vh; overflow: hidden; }
-        
-        /* Arka plandaki parçacık animasyonu */
         #particles-js { position: fixed; width: 100%; height: 100%; z-index: 0; top: 0; left: 0; pointer-events: none; }
-
-        /* Haritanın ekrana yayılması */
         .map-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
         #map { width: 100%; height: 100%; background: #0a0a0a; }
 
-        /* Şehir arama kutusu - MOBİL OPTİMİZE */
         .search-container { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 300px; }
         #citySearch {
             width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #3671c6;
@@ -28,13 +21,11 @@
             box-sizing: border-box;
         }
 
-        /* Sağ üstteki veri seçim butonları */
         .map-overlay-panel {
             position: absolute; top: 75px; right: 10px; background: rgba(10, 10, 10, 0.9);
             padding: 8px; z-index: 1000; border-radius: 12px; border: 1px solid #3671c6; display: flex; flex-direction: column; gap: 6px;
         }
 
-        /* Bilgi kutusu (detay paneli) */
         .info-box {
             position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); 
             padding: 15px; background: rgba(20, 41, 72, 0.98);
@@ -44,15 +35,11 @@
         }
 
         .info-box h4 { margin: 0 0 10px 0; color: #27f4d2; font-family: 'F1Black', sans-serif; border-bottom: 1px solid #3671c6; padding-bottom: 5px; font-size: 13px; }
-        .info-item { margin-bottom: 6px; font-size: 12px; color: #fff; line-height: 1.4; }
-
-        /* Popup tasarımları */
+        
         .leaflet-popup-content-wrapper { background: #142948; color: white; border: 1px solid #27f4d2; font-family: 'F1Regular', sans-serif; }
         .leaflet-popup-tip { background: #27f4d2; }
-        .popup-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
         .popup-btn { background: #27f4d2; color: black; border: none; padding: 8px; cursor: pointer; font-size: 12px; border-radius: 4px; font-family: 'F1Bold'; width: 100%; }
 
-        /* Buton stilleri */
         button { margin: 1px; padding: 10px 14px; border: 1px solid #27f4d2; border-radius: 6px; cursor: pointer; background: transparent; color: #27f4d2; font-family: 'F1Regular', sans-serif; font-size: 11px; transition: 0.3s; min-height: 40px; }
         button:hover, button.active { background: #27f4d2; color: #000; }
         .reset-btn { border-color: #e8002d !important; color: #e8002d !important; }
@@ -66,6 +53,9 @@
             .search-container { left: 60px; transform: none; }
             .leaflet-bottom.leaflet-left { margin-bottom: 20px; }
         }
+
+        /* Yusuf'un evi resmi için stil */
+        .yusuf-img { width: 100%; max-width: 150px; border-radius: 8px; margin-top: 8px; border: 1px solid #27f4d2; }
     </style>
 </head>
 <body>
@@ -115,6 +105,15 @@
         { "İzohips": contours, "Faylar": fayGrubu, "Mahalleler": mahalleGrubu, "Çizimler": cizilenOgeler }, 
         { position: 'bottomleft', collapsed: true }
     ).addTo(map);
+
+    /* --- YUSUF'UN EVİ İŞARETLEYİCİSİ --- */
+    var yusufEvi = L.marker([41.398083, 27.350222]).addTo(map);
+    yusufEvi.bindPopup(`
+        <div style="text-align:center;">
+            <b style="color:#27f4d2; font-family:'F1Bold';">Yusuf'un Evi</b><br>
+            <img src="yusuf.jpeg" alt="Yusuf'un Resmi" class="yusuf-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=yusuf.jpeg+bulunamadı';">
+        </div>
+    `);
 
     var drawControl = new L.Control.Draw({ 
         edit: { featureGroup: cizilenOgeler }, 
@@ -170,14 +169,11 @@
     const dl = document.getElementById('cityList');
     Object.keys(iller).sort().forEach(il => { let opt = document.createElement('option'); opt.value = il; dl.appendChild(opt); });
     
-    // ŞEHİR ARAMA VE EASTER EGG FONKSİYONU
     function goToCity(val) { 
-        // Easter Egg: ismail araması kontrolü (küçük harfe çevirerek karşılaştırır)
         if(val.toLowerCase() === "ismail") {
-            map.flyTo([38.88, 40.49], 11); // Bingöl koordinatları
+            map.flyTo([38.88, 40.49], 11); 
             return;
         }
-
         if(iller[val]) map.flyTo(iller[val], 11); 
     }
 
