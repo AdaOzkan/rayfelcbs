@@ -48,7 +48,6 @@
 
         .leaflet-bottom.leaflet-left { margin-bottom: 160px; margin-left: 5px; }
 
-        /* RESİMLİ İKON STİLLERİ */
         .custom-location-icon {
             border-radius: 50%;
             overflow: hidden;
@@ -97,20 +96,55 @@
 <script>
     particlesJS("particles-js", { "particles": { "number": { "value": 40 }, "color": { "value": "#27f4d2" }, "opacity": { "value": 0.2 }, "line_linked": { "enable": true, "color": "#3671c6" } } });
 
+    // --- KATMAN TANIMLAMALARI ---
     var light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    var contours = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { opacity: 0.5 }); // İZOHİPS GERİ EKLENDİ
+
     var map = L.map('map', { layers: [light], zoomControl: false, tap: false }).setView([41.403, 27.355], 13);
     L.control.zoom({ position: 'bottomleft' }).addTo(map); 
     
     var cizilenOgeler = new L.FeatureGroup().addTo(map);
     var mahalleGrubu = new L.LayerGroup().addTo(map);
     var ozelNoktalarGrubu = new L.LayerGroup().addTo(map);
+    var fayGrubu = new L.LayerGroup().addTo(map); // FAY HATTI GRUBU GERİ EKLENDİ
 
     L.control.layers(
         { "Sade": light, "Uydu": satellite }, 
-        { "Mahalleler": mahalleGrubu, "Özel Evler": ozelNoktalarGrubu, "Çizimler": cizilenOgeler }, 
+        { 
+            "İzohips (Topo)": contours, 
+            "Fay Hatları": fayGrubu, 
+            "Mahalleler": mahalleGrubu, 
+            "Özel Evler": ozelNoktalarGrubu, 
+            "Çizimler": cizilenOgeler 
+        }, 
         { position: 'bottomleft', collapsed: true }
     ).addTo(map);
+
+    /* --- DETAYLI FAY HATLARI VERİSİ --- */
+    const detayliFaylar = {
+        "type": "FeatureCollection",
+        "features": [
+            // KAF - Kuzey Anadolu Fay Hattı Segmentleri
+            { "type": "Feature", "properties": { "name": "KAF - Marmara Segmenti", "risk": "Kritik" }, "geometry": { "type": "LineString", "coordinates": [[26.1, 40.4], [27.2, 40.6], [28.5, 40.8], [29.9, 40.8]] } },
+            { "type": "Feature", "properties": { "name": "KAF - Bolu/Gerede Segmenti", "risk": "Kritik" }, "geometry": { "type": "LineString", "coordinates": [[30.0, 40.8], [31.5, 40.9], [32.8, 41.0]] } },
+            { "type": "Feature", "properties": { "name": "KAF - Orta Anadolu Segmenti", "risk": "Yüksek" }, "geometry": { "type": "LineString", "coordinates": [[33.0, 41.0], [35.0, 40.9], [37.0, 40.3]] } },
+            { "type": "Feature", "properties": { "name": "KAF - Doğu Segmenti", "risk": "Kritik" }, "geometry": { "type": "LineString", "coordinates": [[37.5, 40.2], [39.5, 39.8], [41.0, 39.5], [44.0, 39.2]] } },
+            // DAF - Doğu Anadolu Fay Hattı
+            { "type": "Feature", "properties": { "name": "DAF - Maraş/Antakya Segmenti", "risk": "Kritik" }, "geometry": { "type": "LineString", "coordinates": [[35.8, 36.1], [36.5, 37.0], [37.8, 37.8], [39.0, 38.5]] } },
+            { "type": "Feature", "properties": { "name": "DAF - Bingöl/Karlıova Segmenti", "risk": "Kritik" }, "geometry": { "type": "LineString", "coordinates": [[39.5, 38.8], [40.5, 39.3], [41.2, 39.4]] } },
+            // Batı Anadolu
+            { "type": "Feature", "properties": { "name": "Gediz Grabeni Fayları", "risk": "Yüksek" }, "geometry": { "type": "LineString", "coordinates": [[26.8, 38.5], [28.2, 38.6], [29.5, 38.4]] } },
+            { "type": "Feature", "properties": { "name": "Menderes Grabeni Fayları", "risk": "Yüksek" }, "geometry": { "type": "LineString", "coordinates": [[27.2, 37.9], [28.8, 37.9], [30.2, 37.7]] } }
+        ]
+    };
+
+    L.geoJSON(detayliFaylar, {
+        style: function(feature) { return { color: "#ff0000", weight: 3, opacity: 0.7, dashArray: '5, 10' }; },
+        onEachFeature: function(feature, layer) {
+            layer.bindPopup("<b>" + feature.properties.name + "</b><br>Risk: " + feature.properties.risk);
+        }
+    }).addTo(fayGrubu);
 
     /* --- ÖZEL İKON OLUŞTURUCU --- */
     function createCustomIcon(imgFile, color) {
@@ -124,12 +158,12 @@
     const ozelNoktalar = [
         { name: "Uras'ın Evi", coords: [41.394079, 27.370980], color: "#33FF57", img: "uras.jpeg" },
         { name: "Sarp'ın Evi", coords: [41.429581, 27.101126], color: "#FF5733", img: "sarp.jpeg" },
-        { name: "Ada'nın Evi", coords: [40.888178, 26.896884], color: "#F333FF", img: "ada.jpeg" },
+        { name: "Ada'nın Evi", coords: [40.888178, 26.896884], color: "#F333FF", img: "ada.jpg" },
         { name: "Zile", coords: [40.301905, 35.886380], color: "#FF3333", img: "zile.jpeg" },
         { name: "Yusufun Evi", coords: [41.398083, 27.350222], color: "#FFD700", img: "yusuf.jpeg" },
         { name: "Edirne", coords: [41.677065, 26.555878], color: "#ADFF2F", img: "edirne.jpeg" },
         { name: "Mamak", coords: [39.912075, 32.920025], color: "#00FFFF", img: "ada.jpeg" },
-        { name: "Çatalca", coords: [41.142002, 28.454694], color: "#3357FF", img: "erce.jpeg" } // Çatalca'ya resim eklendi
+        { name: "Çatalca", coords: [41.142002, 28.454694], color: "#3357FF", img: "erce.jpeg" }
     ];
 
     ozelNoktalar.forEach(n => {
