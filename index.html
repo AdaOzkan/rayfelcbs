@@ -54,8 +54,8 @@
             .leaflet-bottom.leaflet-left { margin-bottom: 20px; }
         }
 
-        /* Yusuf'un evi resmi için stil */
-        .yusuf-img { width: 100%; max-width: 150px; border-radius: 8px; margin-top: 8px; border: 1px solid #27f4d2; }
+        /* Ev resimleri için genel stil */
+        .house-img { width: 100%; max-width: 150px; border-radius: 8px; margin-top: 8px; border: 1px solid #27f4d2; }
     </style>
 </head>
 <body>
@@ -99,21 +99,34 @@
     var cizilenOgeler = new L.FeatureGroup().addTo(map);
     var mahalleGrubu = new L.LayerGroup().addTo(map);
     var fayGrubu = new L.LayerGroup().addTo(map);
+    var ozelNoktalar = new L.LayerGroup().addTo(map);
 
     L.control.layers(
         { "Sade": light, "Uydu": satellite }, 
-        { "İzohips": contours, "Faylar": fayGrubu, "Mahalleler": mahalleGrubu, "Çizimler": cizilenOgeler }, 
+        { "İzohips": contours, "Faylar": fayGrubu, "Mahalleler": mahalleGrubu, "Özel Evler": ozelNoktalar, "Çizimler": cizilenOgeler }, 
         { position: 'bottomleft', collapsed: true }
     ).addTo(map);
 
-    /* --- YUSUF'UN EVİ İŞARETLEYİCİSİ --- */
-    var yusufEvi = L.marker([41.398083, 27.350222]).addTo(map);
-    yusufEvi.bindPopup(`
-        <div style="text-align:center;">
-            <b style="color:#27f4d2; font-family:'F1Bold';">Yusuf'un Evi</b><br>
-            <img src="yusuf.jpeg" alt="Yusuf'un Resmi" class="yusuf-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=yusuf.jpeg+bulunamadı';">
-        </div>
-    `);
+    /* --- ÖZEL KONUMLAR (EVLER VE ÇATALCA) --- */
+    function ozelMarkerEkle(lat, lng, baslik, resim) {
+        L.marker([lat, lng]).addTo(ozelNoktalar).bindPopup(`
+            <div style="text-align:center;">
+                <b style="color:#27f4d2; font-family:'F1Bold';">${baslik}</b><br>
+                ${resim ? `<img src="${resim}" class="house-img" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=${resim}+yok';">` : ''}
+            </div>
+        `);
+    }
+
+    // Yusuf'un Evi
+    ozelMarkerEkle(41.398083, 27.350222, "Yusuf'un Evi", "yusuf.jpeg");
+    // Çatalca Noktası
+    ozelMarkerEkle(41.1442, 28.4611, "Çatalca", null);
+    // Uras'ın Evi (41°23'38.59"K 27°22'15.32"D)
+    ozelMarkerEkle(41.394053, 27.370922, "Uras'ın Evi", "uras.jpeg");
+    // Sarp'ın Evi (41°25'46.55"K 27°6'4.17"D)
+    ozelMarkerEkle(41.429597, 27.101158, "Sarp'ın Evi", "sarp.jpeg");
+    // Ada'nın Evi (40°53'17.26"K 26°53'48.79"D)
+    ozelMarkerEkle(40.888128, 26.896886, "Ada'nın Evi", "ada.jpeg");
 
     var drawControl = new L.Control.Draw({ 
         edit: { featureGroup: cizilenOgeler }, 
